@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WORLD’S WORST TIMETABLE</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #00ff66; --ink: #ff00cc; --panel: #ffff00; --panel2: #00ccff;
+    --btn: #ff3300; --btn-ink: #ffffcc; --border: #6600ff;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #ff00aa; --ink: #00ffee; --panel: #7700ff; --panel2: #ff6600;
+      --btn: #ccff00; --btn-ink: #330066; --border: #00ff00;
+    }
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; padding: 12px;
+    background: var(--bg) repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,0,255,.25) 14px 28px);
+    color: var(--ink); font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", cursive;
+    cursor: crosshair; overflow-x: hidden;
+  }
+  h1 {
+    font-size: clamp(26px, 6vw, 54px); margin: 0 0 8px; text-align: center;
+    text-shadow: 3px 3px 0 #0000ff, -2px -2px 0 #ffff00;
+    animation: wobble 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes wobble { from { transform: rotate(-2deg) } to { transform: rotate(2deg) scale(1.03) } }
+  .blink { animation: blink .7s steps(2, start) infinite; }
+  @keyframes blink { to { visibility: hidden } }
+  .ticker { background: #000; color: #0f0; border: 4px ridge var(--border); padding: 4px; font-size: 18px; overflow: hidden; white-space: nowrap; }
+  .ticker span { display: inline-block; padding-left: 100%; animation: scroll 14s linear infinite; }
+  @keyframes scroll { to { transform: translateX(-100%) } }
+  .box { border: 6px dashed var(--border); padding: 14px; margin: 16px auto; max-width: 720px; background: var(--panel); }
+  .box.alt { background: var(--panel2); border-style: groove; }
+  label.t { display: block; font-size: 22px; margin-bottom: 6px; color: #cc0000; text-decoration: underline wavy; }
+  #runner {
+    position: fixed; z-index: 50; left: 40vw; top: 40vh;
+    padding: 14px 22px; font: bold 22px "Comic Sans MS", "Comic Sans", cursive;
+    background: var(--btn); color: var(--btn-ink); border: 5px outset #ffaa00; border-radius: 0;
+    transition: left .18s ease-out, top .18s ease-out; cursor: pointer;
+  }
+  #taunt { text-align: center; font-size: 20px; min-height: 28px; margin: 4px 0; background: #fff; color: #cc0000; border: 2px solid #000; padding: 2px 6px; }
+  #slider { width: 220px; max-width: 100%; height: 40px; accent-color: #ff0000; }
+  #dayReadout { font-size: 30px; font-weight: bold; color: #0000ff; background: #fff; display: inline-block; padding: 0 10px; border: 3px double #000; margin-left: 8px; }
+  .dd { position: relative; display: inline-block; min-width: 260px; max-width: 100%; }
+  .dd-head { width: 100%; text-align: left; font: 20px "Comic Sans MS", "Comic Sans", cursive; padding: 8px; background: #fff; color: #000; border: 4px inset #888; cursor: pointer; }
+  .dd-list { list-style: none; margin: 0; padding: 0; position: absolute; left: 0; right: 0; top: 100%; background: #ffccff; border: 4px solid #000; z-index: 20; display: none; }
+  .dd.open .dd-list { display: block; }
+  .dd-list li { padding: 8px; font-size: 20px; color: #000; cursor: pointer; border-bottom: 2px dotted #000; }
+  .dd-list li:hover { background: #ffff00; }
+  table { width: 100%; border-collapse: collapse; background: #fff; color: #000; font-size: 20px; }
+  th, td { border: 3px solid #ff00ff; padding: 8px; text-align: left; }
+  th { background: #0000ff; color: #ffff00; }
+  td:nth-child(odd) { background: #ffccaa; }
+  td:nth-child(even) { background: #aaffee; }
+  #empty { font-size: 22px; background: #fff; color: #cc0000; padding: 10px; border: 3px dotted #000; }
+  #timetableArea[hidden] { display: none; }
+  .small { font-size: 12px; text-align: center; }
+  @media (prefers-reduced-motion: reduce) { h1, .blink, .ticker span { animation: none; } }
+</style>
+</head>
+<body>
+  <h1>★ MEGA SCHOOL TIMETABLE 3000 ★</h1>
+  <div class="ticker"><span>WELCOME TO THE MOST USER-FRIENDLY TIMETABLE EVER MADE!!! NO REFUNDS!!! BEST VIEWED IN INTERNET EXPLORER 6!!! YOU ARE VISITOR NUMBER 000013!!!</span></div>
+  <div id="taunt" class="blink">Click the button to see your timetable!</div>
+
+  <button id="runner" type="button">Show Timetable</button>
+
+  <div id="timetableArea" hidden>
+    <div class="box">
+      <label class="t" for="slider">Step 1: Choose your day (use the Day-O-Meter™)</label>
+      <input id="slider" type="range" min="0" max="100000" step="1" value="0">
+      <span id="dayReadout">Monday</span>
+    </div>
+
+    <div class="box alt">
+      <label class="t">Step 2: Choose your classroom (fast!)</label>
+      <div class="dd" id="dd">
+        <button class="dd-head" type="button" id="ddHead" aria-haspopup="listbox" aria-expanded="false">All rooms ▼</button>
+        <ul class="dd-list" id="ddList" role="listbox"></ul>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2 id="title" style="margin-top:0">Timetable</h2>
+      <div id="out"></div>
+    </div>
+  </div>
+
+  <p class="small">© 1998 Worst UI Corp. Made for r/badUIbattles-style fun. Tip: keyboard users get no special treatment (or do they?).</p>
+
+<script>
+(function () {
+  var DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  var DATA = {
+    Monday:    [["08:00", "Math", "Room 101"], ["09:30", "History", "Room 214"], ["11:00", "Science", "Lab 3"]],
+    Tuesday:   [["08:00", "English", "Room 102"], ["09:30", "P.E.", "Gym"], ["11:00", "Art", "Art Studio"]],
+    Wednesday: [["08:00", "Math", "Room 101"], ["09:30", "Chemistry", "Lab 3"], ["11:00", "Geography", "Room 305"]],
+    Thursday:  [["08:00", "History", "Room 214"], ["09:30", "Music", "Room 102"], ["11:00", "Science", "Lab 3"]],
+    Friday:    [["08:00", "Computing", "Room 305"], ["09:30", "Reading", "Library"], ["11:00", "Math", "Room 101"]]
+  };
+  var ROOMS = ["All rooms", "Room 101", "Room 102", "Lab 3", "Gym", "Room 214", "Art Studio", "Room 305", "Library"];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var runner = $("runner"), taunt = $("taunt");
+  var state = { day: 0, room: "All rooms", dodges: 0, shown: false };
+
+  /* ---------- Anti-pattern 1: the runaway button ---------- */
+  var TAUNTS = ["Too slow!", "Nope.", "Missed me!", "Try harder!", "Is that all you’ve got?", "Catch me if you can!", "Almost!", "Over here!"];
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function randomSpot() {
+    var w = runner.offsetWidth, h = runner.offsetHeight;
+    runner.style.left = Math.random() * (innerWidth - w) + "px";
+    runner.style.top = Math.random() * (innerHeight - h) + "px";
+  }
+  function dodge(mx, my) {
+    var r = runner.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    var dx = cx - mx, dy = cy - my, dist = Math.hypot(dx, dy) || 1;
+    if (dist > 140 + r.width / 4) return;
+    var nx = clamp(r.left + (dx / dist) * 200, 0, innerWidth - r.width);
+    var ny = clamp(r.top + (dy / dist) * 200, 0, innerHeight - r.height);
+    // Cornered against a wall? Teleport instead of letting the user win.
+    if (Math.hypot(nx - r.left, ny - r.top) < 60) { randomSpot(); }
+    else { runner.style.left = nx + "px"; runner.style.top = ny + "px"; }
+    state.dodges++;
+    taunt.textContent = TAUNTS[state.dodges % TAUNTS.length] + " (dodges: " + state.dodges + ")";
+    if (state.dodges === 25) taunt.textContent = "Psst… the Tab key and Enter don’t run away.";
+  }
+  var lastMove = 0;
+  document.addEventListener("mousemove", function (e) {
+    var now = performance.now();
+    if (now - lastMove < 16) return; // throttle to ~60fps
+    lastMove = now;
+    if (!state.shown) dodge(e.clientX, e.clientY);
+  });
+  document.addEventListener("touchstart", function (e) {
+    if (!state.shown && e.touches[0]) dodge(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: true });
+  window.addEventListener("resize", function () { if (!state.shown) randomSpot(); });
+  runner.addEventListener("click", function () {
+    state.shown = true;
+    runner.style.display = "none";
+    taunt.className = "";
+    taunt.textContent = "Wow, you actually did it. Now the real suffering begins.";
+    $("timetableArea").hidden = false;
+    render();
+    $("timetableArea").scrollIntoView({ behavior: "smooth" });
+  });
+
+  /* ---------- Anti-pattern 2: the hypersensitive Day-O-Meter ---------- */
+  // 100,000 slider units on a ~220px track; each weekday "zone" is only 700 units
+  // (about 1.5px), and the zones cycle Mon→Fri over and over.
+  var slider = $("slider");
+  slider.addEventListener("input", function () {
+    state.day = Math.floor(Number(slider.value) / 700) % 5;
+    $("dayReadout").textContent = DAYS[state.day];
+    render();
+  });
+
+  /* ---------- Anti-pattern 3: the shuffling dropdown ---------- */
+  var dd = $("dd"), ddHead = $("ddHead"), ddList = $("ddList");
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function renderOptions() {
+    var order = shuffle(ROOMS.slice());
+    ddList.textContent = "";
+    order.forEach(function (name) {
+      var li = document.createElement("li");
+      li.setAttribute("role", "option");
+      li.textContent = name;
+      li.addEventListener("click", function (e) {
+        e.stopPropagation();
+        state.room = name;
+        ddHead.textContent = name + " ▼";
+        closeDD();
+        render();
+      });
+      ddList.appendChild(li);
+    });
+  }
+  function openDD() { dd.classList.add("open"); ddHead.setAttribute("aria-expanded", "true"); renderOptions(); }
+  function closeDD() { dd.classList.remove("open"); ddHead.setAttribute("aria-expanded", "false"); }
+  ddHead.addEventListener("click", function (e) {
+    e.stopPropagation();
+    dd.classList.contains("open") ? closeDD() : openDD();
+  });
+  document.addEventListener("click", closeDD);
+  // Only shuffle while open, so it costs nothing when closed.
+  setInterval(function () { if (dd.classList.contains("open")) renderOptions(); }, 500);
+
+  /* ---------- Rendering ---------- */
+  function render() {
+    var day = DAYS[state.day];
+    $("title").textContent = day + (state.room === "All rooms" ? "" : " — " + state.room);
+    var rows = DATA[day].filter(function (c) { return state.room === "All rooms" || c[2] === state.room; });
+    var out = $("out");
+    out.textContent = "";
+    if (!rows.length) {
+      var p = document.createElement("div");
+      p.id = "empty";
+      p.textContent = "No classes in " + state.room + " on " + day + ". Try spinning the slider again!";
+      out.appendChild(p);
+      return;
+    }
+    var table = document.createElement("table");
+    var head = table.insertRow();
+    ["Time", "Class", "Room"].forEach(function (h) {
+      var th = document.createElement("th"); th.textContent = h; head.appendChild(th);
+    });
+    rows.forEach(function (r) {
+      var tr = table.insertRow();
+      r.forEach(function (v) { tr.insertCell().textContent = v; });
+    });
+    out.appendChild(table);
+  }
+
+  randomSpot();
+})();
+</script>
+</body>
+</html>
